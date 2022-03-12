@@ -24,7 +24,8 @@ for i, f in enumerate(os.listdir(path)):
         img = cv2.imread(img_path) # load image
 
         # skip if image too small
-        if img.shape[0] < 256 or img.shape[1] < 256:
+        # width (shape[1] will be cut in half)
+        if img is None or img.shape[0] < 256 or img.shape[1] < 512:
             continue
 
         # use opencv to count white pixels
