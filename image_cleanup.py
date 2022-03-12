@@ -31,7 +31,7 @@ for i, f in enumerate(os.listdir(path)):
 
         # shrink image and save to new dir
         dh, dw =  img.shape[0], img.shape[1] // 2 # new img dimensions (shrink width)
-        res = cv2.resize(img, dsize=(dh, dw), interpolation=cv2.INTER_CUBIC)   
+        res = cv2.resize(img, dsize=(dw, dh), interpolation=cv2.INTER_CUBIC)   
         cv2.imwrite(f"./resized_pix_data/pix_image{str(i).zfill(4)}.png", res)
         valid_count += 1
 
