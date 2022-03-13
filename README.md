@@ -27,3 +27,15 @@ Use a depth map to create some part of the image a certain way (think matrix/cod
 Maybe we could also have a custom sky?
 
 Dataset augmentations currently include both horizontal mirror and 3 rotation augmentations
+
+# Modifications to TravelGAN
+
+Default TravelGAN pytorch model can be found at https://github.com/Medabid1/TravelGAN
+
+The model mimics an image domain with sizes 256x256 and trains 50000 epochs.
+We will modify the model to generate patches of size 64x64 and then stitch four patches together
+to feed a 256x256 image to the discriminator. This effectively forces the generator to create
+small patches whose edges naturally blend together.
+
+Our source domain has 49k images and our target domain has 30.7k images. Initially, the
+TravelGAN model was modified to be trained for 500 epochs.
