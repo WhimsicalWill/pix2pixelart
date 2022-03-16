@@ -9,9 +9,9 @@ from torch.utils.data import DataLoader, Dataset
 from torchvision.datasets import CIFAR10
 from torchvision.transforms import transforms
 from utils import get_DataLoader_fromDataset, get_Dataset_fromFolder, get_indices, GridDataset
-# from config.parser import parser
+from config.parser import parser
 from src.travelgan import TravelGan
-# from logs.logger import Logger
+from logs.logger import Logger
 from utils import get_DataLoader_fromFolder
 
 parser = parser('config/config.ini')
