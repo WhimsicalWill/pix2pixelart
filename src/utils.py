@@ -1,24 +1,58 @@
 import torch
 import torch.nn.init as init
 import torchvision
+import os
+import matplotlib.pyplot as plt
 from torchvision.datasets import ImageFolder 
+from torch.utils.data import DataLoader, Dataset
 from torchvision.transforms import transforms
+from os.path import isfile, join
 
-def get_DataLoader_fromFolder(path, batch_size, transform=None):
-    
-    train_dataset = ImageFolder(
-        root=path,
-        transform= transforms.Compose([transforms.ToTensor(), 
-                                       transforms.Normalize((0.5, 0.5, 0.5),
-                                                            (0.5, 0.5, 0.5))]))
+# only to be used for generator files (source domain)
+class GridDataset(Dataset):
+    def __init__(self, path, batch_size, transform):
+        self.path = path
+        # is the isfile check necessary? if isfile(join(path + '/source/', f))
+        # only track one file from the grid (wlog. lets pick the first one)
+        self.filenames = [f.replace('+1', '') for f in sorted(os.listdir(path + '/source/')) if f.contains("+1")]
+        # remove the grid id from the path
+        # this might be hard because it happens before an arb. filename? (.png, .jpg, .jpeg)
+        # nvm, all are .png
+
+    def __len__(self):
+        # divide total number of paths in dir by 4
+        return len(self.filenames)
+
+    # get item at idx
+    def __getitem__(self, idx):
+        # concat 4 corresponding images together
+        source_path = [os.path.join(self.path, f"/source/{self.filenames[idx]}+{i}") for i in range(4)]
+        h = [plt.imread(path) for path in source_path]
+
+        # with batch size, h is shape (4, B, 3, 64, 64)
+        # TODO: make memory efficient for faster training
+        temp1 = torch.cat(h[0], h[1], dim=3) # concat first row
+        temp2 = torch.cat(h[2], h[3], dim=3) # concat second row
+        out = torch.cat(temp1, temp2, dim=2) # concat top with bottom
+        return out
+
+def get_DataLoader_fromDataset(dataset, batch_size):
     train_loader = torch.utils.data.DataLoader(
-        train_dataset,
+        dataset,
         batch_size=batch_size,
         num_workers=4,
         shuffle=True
     )
     return train_loader
-    
+
+def get_DataLoader_fromFolder(path, batch_size, transform=None):
+    train_dataset = ImageFolder(
+        root=path,
+        transform= transforms.Compose([transforms.ToTensor(), 
+                                       transforms.Normalize((0.5, 0.5, 0.5),
+                                                            (0.5, 0.5, 0.5))]))
+    return get_DataLoader_fromDataset(train_dataset, batch_size)
+
 def get_indices(dataset,class_name):
     indices =  []
     try : 
