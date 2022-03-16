@@ -73,7 +73,6 @@ class Generator(nn.Module):
     def forward(self, x):
         return self.main(x)
 
-
 class Discriminator(nn.Module):
     """Discriminator network with PatchGAN."""
     def __init__(self, in_channels, num_feat=64, num_repeat=6):

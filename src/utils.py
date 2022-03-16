@@ -28,13 +28,7 @@ class GridDataset(Dataset):
         # concat 4 corresponding images together
         source_path = [os.path.join(self.path, f"/source/{self.filenames[idx]}+{i}") for i in range(4)]
         h = [plt.imread(path) for path in source_path]
-
-        # with batch size, h is shape (4, B, 3, 64, 64)
-        # TODO: make memory efficient for faster training
-        temp1 = torch.cat(h[0], h[1], dim=3) # concat first row
-        temp2 = torch.cat(h[2], h[3], dim=3) # concat second row
-        out = torch.cat(temp1, temp2, dim=2) # concat top with bottom
-        return out
+        return h
 
 def get_DataLoader_fromDataset(dataset, batch_size):
     train_loader = torch.utils.data.DataLoader(
