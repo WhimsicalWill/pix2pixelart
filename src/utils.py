@@ -13,12 +13,9 @@ from os.path import isfile, join
 class GridDataset(Dataset):
     def __init__(self, path, batch_size, transform=transforms.ToTensor()):
         self.path = path
-        # is the isfile check necessary? if isfile(join(path + '/source/', f))
-        # only track one file from the grid (wlog. lets pick the first one)
-        self.filenames = [f for f in sorted(os.listdir(path))] # all subdirs (containing grids)
-        # remove the grid id from the path
-        # this might be hard because it happens before an arb. filename? (.png, .jpg, .jpeg)
-        # nvm, all are .png
+        self.transform = transform
+        # TODO: redefine valid num of files as a lambda function
+        self.filenames = [f for f in sorted(os.listdir(path))]
 
     def __len__(self):
         return len(self.filenames)
@@ -27,9 +24,12 @@ class GridDataset(Dataset):
     def __getitem__(self, idx):
         # dataloader serves 4 corresponding images together
         # Note: paths are more robust by indexing filenames list
-        source_path = [os.path.join(self.path, f"{self.filenames[idx]}/img{i}.png") for i in range(4)]
-        h = [self.transform(Image.open(path)) for path in source_path]
-        return h # returns list of 4 images in a grid
+        while True: # iterate through until valid; TODO: clean actual data dir
+            if isfile(join(self.path, f"{self.filenames[idx]}/img3.png")):
+                source_path = [join(self.path, f"{self.filenames[idx]}/img{i}.png") for i in range(4)]
+                h = [self.transform(Image.open(img)) for img in source_path]
+                return h # returns list of 4 images in a grid
+            self.filenames.remove(idx) # remove dir at index from filenames
 
 def get_DataLoader_fromDataset(dataset, batch_size):
     train_loader = torch.utils.data.DataLoader(
