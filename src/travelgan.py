@@ -50,17 +50,14 @@ class TravelGan:
             #===============================
             self.opt_dis.zero_grad()
 
+            # TODO: make memory efficient for faster training
             # TODO: reimplement using inplace method resize_ for efficiency
             h = [self.gen(x_a_i) for x_a_i in x_a] # x_ab is a list
-
             # with batch size, h is shape (4, B, 3, 128, 128)
-            # TODO: make memory efficient for faster training
             temp1 = torch.cat(h[0], h[1], dim=3) # concat first row
             temp2 = torch.cat(h[2], h[3], dim=3) # concat second row
             x_ab = torch.cat(temp1, temp2, dim=2) # concat top with bottom
-            
             # x_ab has shape (B, 3, 256, 256)
-
 
             dis_loss = self.dis.calc_dis_loss(x_b, x_ab.detach())
             dis_loss.backward()
