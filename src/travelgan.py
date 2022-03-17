@@ -33,8 +33,10 @@ class TravelGan:
     
     def _train_epoch(self, loaderA, loaderB, epoch):
         for i, (x_a, x_b) in enumerate(zip(loaderA, loaderB)):
-            # x_a has shape (4, B, 3, 128, 128)
-            # x_b has shape (B, 3, 256, 256) -- same amount of data
+            # x_a has shape (4, B, 3, size//2, size//2)
+            # x_b has shape (B, 3, size, size) -- same amount of pixels
+            # zip only creates as many pairs as it can; TODO: make sure overflow is random each time
+
             global_step = len(loaderB) * epoch + i
             
             if isinstance(x_a, (tuple, list)):

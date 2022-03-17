@@ -18,8 +18,8 @@ parser = parser('config/config.ini')
 config = parser.to_dict()
 logger = Logger(config['logfile'], config['enable_wandb'])
 
-source_path = './source'
-target_path = './target'
+source_path = './final_source128'
+target_path = './final_target128'
 
 # create custom source dataset
 source_dataset = GridDataset(source_path, config['batch_size'])

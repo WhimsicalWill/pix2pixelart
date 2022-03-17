@@ -14,21 +14,20 @@ class GridDataset(Dataset):
         self.path = path
         # is the isfile check necessary? if isfile(join(path + '/source/', f))
         # only track one file from the grid (wlog. lets pick the first one)
-        self.filenames = [f.replace('+1', '') for f in sorted(os.listdir(path + '/source/')) if f.contains("+1")]
+        self.filenames = [f for f in sorted(os.listdir(path))] # all subdirs (containing grids)
         # remove the grid id from the path
         # this might be hard because it happens before an arb. filename? (.png, .jpg, .jpeg)
         # nvm, all are .png
 
     def __len__(self):
-        # divide total number of paths in dir by 4
         return len(self.filenames)
 
     # get item at idx
     def __getitem__(self, idx):
-        # concat 4 corresponding images together
-        source_path = [os.path.join(self.path, f"/source/{self.filenames[idx]}+{i}") for i in range(4)]
+        # dataloader serves 4 corresponding images together
+        source_path = [os.path.join(self.path, f"/source_grid{str(idx).zfill(5)}/img{i}.png") for i in range(4)]
         h = [plt.imread(path) for path in source_path]
-        return h
+        return h # returns list of 4 images in a grid
 
 def get_DataLoader_fromDataset(dataset, batch_size):
     train_loader = torch.utils.data.DataLoader(
