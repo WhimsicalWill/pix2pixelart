@@ -6,11 +6,12 @@ import matplotlib.pyplot as plt
 from torchvision.datasets import ImageFolder 
 from torch.utils.data import DataLoader, Dataset
 from torchvision.transforms import transforms
+from PIL import Image
 from os.path import isfile, join
 
 # only to be used for generator files (source domain)
 class GridDataset(Dataset):
-    def __init__(self, path, batch_size, transform):
+    def __init__(self, path, batch_size, transform=transforms.ToTensor()):
         self.path = path
         # is the isfile check necessary? if isfile(join(path + '/source/', f))
         # only track one file from the grid (wlog. lets pick the first one)
@@ -25,8 +26,9 @@ class GridDataset(Dataset):
     # get item at idx
     def __getitem__(self, idx):
         # dataloader serves 4 corresponding images together
-        source_path = [os.path.join(self.path, f"/source_grid{str(idx).zfill(5)}/img{i}.png") for i in range(4)]
-        h = [plt.imread(path) for path in source_path]
+        # Note: paths are more robust by indexing filenames list
+        source_path = [os.path.join(self.path, f"{self.filenames[idx]}/img{i}.png") for i in range(4)]
+        h = [self.transform(Image.open(path)) for path in source_path]
         return h # returns list of 4 images in a grid
 
 def get_DataLoader_fromDataset(dataset, batch_size):

@@ -1,5 +1,3 @@
-
-i
 import torch
 import torch.nn as nn 
 import torch.nn.functional as F 
@@ -8,11 +6,10 @@ import torch.utils.data as Data
 from torch.utils.data import DataLoader, Dataset
 from torchvision.datasets import CIFAR10
 from torchvision.transforms import transforms
-from utils import get_DataLoader_fromDataset, get_Dataset_fromFolder, get_indices, GridDataset
+from utils import get_DataLoader_fromDataset, get_DataLoader_fromFolder, get_indices, GridDataset
 from config.parser import parser
 from src.travelgan import TravelGan
 from logs.logger import Logger
-from utils import get_DataLoader_fromFolder
 
 parser = parser('config/config.ini')
 config = parser.to_dict()
