@@ -22,14 +22,17 @@ class GridDataset(Dataset):
 
     # get item at idx
     def __getitem__(self, idx):
+        # TODO: remove list comprehensions and python lists in favor of torch.cat
         # dataloader serves 4 corresponding images together
         # Note: paths are more robust by indexing filenames list
         while True: # iterate through until valid; TODO: clean actual data dir
-            if isfile(join(self.path, f"{self.filenames[idx]}/img3.png")):
-                source_path = [join(self.path, f"{self.filenames[idx]}/img{i}.png") for i in range(4)]
+            base_path = join(self.path, f"{self.filenames[idx]}")
+            if isfile(f"{base_path}/img3.png"):
+                source_path = [f"{base_path}/img{i}.png" for i in range(4)]
                 h = [self.transform(Image.open(img)) for img in source_path]
                 return h # returns list of 4 images in a grid
-            self.filenames.remove(idx) # remove dir at index from filenames
+            os.removedirs(f"{base_path}") # remove from dir
+            self.filenames.pop(idx) # remove dir at index from filenames
 
 def get_DataLoader_fromDataset(dataset, batch_size):
     train_loader = torch.utils.data.DataLoader(
