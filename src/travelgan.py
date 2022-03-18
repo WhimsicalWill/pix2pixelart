@@ -29,13 +29,14 @@ class TravelGan:
         self.gen_scheduler = optim.lr_scheduler.StepLR(self.opt_gen, config['step_size'], gamma=0.1)
         self.dis_scheduler = optim.lr_scheduler.StepLR(self.opt_dis, config['step_size'], gamma=0.1)
 
-    # dataloader for source gives grid -- must stitch
-    def stitch_grid(self, grid_list):
-        # Assumes shape of (4, B, C, W, H)
-        temp1 = torch.cat((grid_list[0], grid_list[1]), dim=3) # concat first row
-        temp2 = torch.cat((grid_list[2], grid_list[3]), dim=3) # concat second row
-        res = torch.cat((temp1, temp2), dim=2) # concat top with bottom
-        return res.to(self.device) # TODO: make more efficient
+    # call generator multiple times on larger image grid
+    def gen_grid(self, x_a):
+        x_ab = torch.zeros_like(x_a).to(self.device) # shape (B, 3, H, W)
+        dh, dw = x_ab.shape()[-2:] / self.config['size_reduce']
+        for y in range(self.config['size_reduce']):
+            for x in range(self.config['size_reduce']):
+                x_ab[:, :, dh*y:dh*y+dh, dw*x: dw*x+dw] = self.gen(x_a[:, :, dh*y:dh*y+dh, dw*x: dw*x+dw]) 
+        return x_ab
 
     def _train_epoch(self, loaderA, loaderB, epoch):
         for i, (x_a, x_b) in enumerate(zip(loaderA, loaderB)):
@@ -43,24 +44,19 @@ class TravelGan:
 
             global_step = len(loaderB) * epoch + i
             
-            # if isinstance(x_a, (tuple, list)):
-            #     x_a = x_a[0]
+            if isinstance(x_a, (tuple, list)):
+                x_a = x_a[0]
             if isinstance(x_b, (tuple, list)):
                 x_b = x_b[0]
             
-            # x_a = x_a.to(self.device)
+            x_a = x_a.to(self.device)
             x_b = x_b.to(self.device)
             
             #===============================
             # Dis Update 
             #===============================
             self.opt_dis.zero_grad()
-
-            # TODO: make memory efficient for faster training
-            # TODO: reimplement using inplace method resize_ for efficiency
-            h = [self.gen(x_a[j].to(self.device)) for j in range(4)] # (4, B, 3, 64, 64)
-            x_ab = self.stitch_grid(h) # shape (B, 3, 128, 128)
-
+            x_ab = self.gen_grid(x_a)
             dis_loss = self.dis.calc_dis_loss(x_b, x_ab.detach())
             dis_loss.backward()
             self.opt_dis.step()
@@ -74,9 +70,7 @@ class TravelGan:
             self.opt_gen.zero_grad()
             gen_adv_loss = self.dis.calc_gen_loss(x_ab)
 
-            # must concat x_a using torch.cat
-            x_a_stitched = self.stitch_grid(x_a) # x_a has shape (B, 3, H, W)
-            gen_siamese_loss = self.siamese.calc_loss(x_a_stitched, x_ab)
+            gen_siamese_loss = self.siamese.calc_loss(x_a, x_ab)
             gen_loss = self.config['gen_adv_loss_w'] * gen_adv_loss + \
                        self.config['siamese_loss_w'] * gen_siamese_loss
             
@@ -103,11 +97,10 @@ class TravelGan:
 
     def sample(self, x_a, step):
         self.gen.eval()
-        h = [self.gen(x_a[j].to(self.device)) for j in range(4)] # (4, B, 3, 64, 64)
-        x_ab = self.stitch_grid(h) # (B, 3, 128, 128)
-        x_a = self.stitch_grid(x_a) # (B, 3, 128, 128)
+        x_ab = self.gen_grid(x_a)
         self.logger.add_image('real images', x_a, step)
         self.logger.add_image('sampled images', x_ab, step)
+        self.gen.train() # re-enable training mode
 
     def save(self, iter): 
         torch.save({'gen' : self.gen.state_dict(),
