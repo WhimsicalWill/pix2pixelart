@@ -15,9 +15,7 @@ parser = parser('config/config.ini')
 config = parser.to_dict()
 logger = Logger(config['logfile'], config['enable_wandb'])
 
-source_path = './final_source128'
-target_path = './final_target128'
-
+print("Creating Dataloaders")
 # create torch dataloaders for source and target domains
 source_loader = get_DataLoader_fromFolder(source_path, config['batch_size'])
 target_loader = get_DataLoader_fromFolder(target_path, config['batch_size'])
@@ -25,6 +23,11 @@ target_loader = get_DataLoader_fromFolder(target_path, config['batch_size'])
 # NOTE: source and target domains are not in any correspondence to one another
 # NOTE: forgot to normalize source domain images
 
+print("Creating model")
 model = TravelGan(config, logger)
-model.load()
+
+# print("Loading saved model")
+# model.load()
+
+print("The model is being trained!")
 model.train(source_loader, target_loader)
