@@ -32,7 +32,7 @@ class TravelGan:
     # call generator multiple times on larger image grid
     def gen_grid(self, x_a):
         x_ab = torch.zeros_like(x_a).to(self.device) # shape (B, 3, H, W)
-        dh, dw = x_ab.shape()[-2:] / self.config['size_reduce']
+        dh, dw = x_ab.shape[2] // self.config['size_reduce'], x_ab.shape[3] // self.config['size_reduce']
         for y in range(self.config['size_reduce']):
             for x in range(self.config['size_reduce']):
                 x_ab[:, :, dh*y:dh*y+dh, dw*x: dw*x+dw] = self.gen(x_a[:, :, dh*y:dh*y+dh, dw*x: dw*x+dw]) 

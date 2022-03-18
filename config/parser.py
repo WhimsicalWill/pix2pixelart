@@ -33,6 +33,7 @@ class parser:
         c['num_feat'] = model.getint('num_feat')
         c['num_repeat'] = model.getint('num_repeat')
         c['num_res'] = model.getint('num_res')
+        c['size_reduce'] = model.getint('size_reduce')
 
         loss = self.config['LOSS']
         c['gen_adv_loss_w'] = loss.getint('gen_adv_loss_w')
