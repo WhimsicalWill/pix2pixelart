@@ -29,9 +29,9 @@ class ResidualBlock(nn.Module):
 
     def forward(self, x):
         out = self.main(x)
-        if self.is_attention :
+        if self.is_attention:
             x = x + out * self.attention(out)
-        else :
+        else:
             x = x + out 
         return x
 
@@ -89,10 +89,14 @@ class Discriminator(nn.Module):
 
         self.main = nn.Sequential(*layers)
         self.conv1 = nn.Conv2d(curr_dim, 1, kernel_size=3, stride=1, padding=1)
+        # TODO: Add tanh and maybe target .9 instead of 1?
         self.apply(weights_init())
 
     def forward(self, x):
-        h = self.main(x)
+        # inject noise into discriminator model
+        noise_sigma = 0.1 # guess for good noise level
+        noise = torch.randn(x.shape) * noise_sigma
+        h = self.main(x + noise)
         out = self.conv1(h)
         return out
 

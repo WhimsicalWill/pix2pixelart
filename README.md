@@ -39,3 +39,15 @@ small patches whose edges naturally blend together.
 
 Our source domain has 49k images and our target domain has 30.7k images. Initially, the
 TravelGAN model was modified to be trained for 500 epochs.
+
+# Hyperparameter search
+
+Test out different values of the following config parameters using wandb.sweep:
+num_res: (5, 6, 7, 8, 9, 10)
+num_feat: (32, 64)
+gen_lr: min=1e-5, max=2e-4
+disc_lr: min=1e-5, max=2e-4
+gen_adv_loss_w: (1)
+siamese_loss_w: min=.4, max=2.5
+
+Cover hyperparameter space using grid sweep

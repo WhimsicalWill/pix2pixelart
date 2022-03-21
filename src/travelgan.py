@@ -57,6 +57,8 @@ class TravelGan:
             #===============================
             self.opt_dis.zero_grad()
             x_ab = self.gen_grid(x_a)
+
+            # TODO: add gaussian noise to discriminator
             dis_loss = self.dis.calc_dis_loss(x_b, x_ab.detach())
             dis_loss.backward()
             self.opt_dis.step()
