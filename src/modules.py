@@ -88,27 +88,28 @@ class Discriminator(nn.Module):
             curr_dim = curr_dim * 2
 
         self.main = nn.Sequential(*layers)
-        self.conv1 = nn.Conv2d(curr_dim, 1, kernel_size=3, stride=1, padding=1)
-        # TODO: Add tanh and maybe target .9 instead of 1?
+        self.final = nn.Tanh(nn.Conv2d(curr_dim, 1, kernel_size=3, stride=1, padding=1))
         self.apply(weights_init())
 
     def forward(self, x):
-        # inject noise into discriminator model
+        # inject gaussian noise into discriminator model for robustness
         noise_sigma = 0.1 # guess for good noise level
-        noise = torch.randn(x.shape) * noise_sigma
-        h = self.main(x + noise)
-        out = self.conv1(h)
+        x =  x + torch.randn(x.shape) * noise_sigma
+        h = self.main(x)
+        out = self.final(h)
         return out
 
     def calc_dis_loss(self, x_real, x_fake):
         real_pred = self.forward(x_real)
         fake_pred = self.forward(x_fake)
-        loss = torch.mean((real_pred - 1)**2) + torch.mean((fake_pred - 0)**2)
+        # discriminator output is tanh and loss uses 0.9 and 0.1 smooth labels
+        soft_fake, soft_real = 0.1, 0.9
+        loss = torch.mean((real_pred - soft_real)**2) + torch.mean((fake_pred - soft_fake)**2)
         return loss
     
     def calc_gen_loss(self, x):
         pred = self.forward(x)
-        loss = torch.mean((pred - 1)**2)
+        loss = torch.mean((pred - 1)**2) # hard label at 1 for generator
         return loss 
 
 class SiameseNet(nn.Module):
