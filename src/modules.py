@@ -88,7 +88,8 @@ class Discriminator(nn.Module):
             curr_dim = curr_dim * 2
 
         self.main = nn.Sequential(*layers)
-        self.final = nn.Sigmoid(nn.Conv2d(curr_dim, 1, kernel_size=3, stride=1, padding=1))
+        self.conv1 = nn.Conv2d(curr_dim, 1, kernel_size=3, stride=1, padding=1)
+        self.sigmoid = nn.Sigmoid()
         self.apply(weights_init())
 
     def forward(self, x):
@@ -96,7 +97,7 @@ class Discriminator(nn.Module):
         noise_sigma = 0.1 # guess for good noise level
         x =  x + torch.randn(x.shape) * noise_sigma
         h = self.main(x)
-        out = self.final(h)
+        out = self.sigmoid(self.conv1(h))
         return out
 
     def calc_dis_loss(self, x_real, x_fake):
