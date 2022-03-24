@@ -88,7 +88,7 @@ class Discriminator(nn.Module):
             curr_dim = curr_dim * 2
 
         self.main = nn.Sequential(*layers)
-        self.final = nn.Tanh(nn.Conv2d(curr_dim, 1, kernel_size=3, stride=1, padding=1))
+        self.final = nn.Sigmoid(nn.Conv2d(curr_dim, 1, kernel_size=3, stride=1, padding=1))
         self.apply(weights_init())
 
     def forward(self, x):
