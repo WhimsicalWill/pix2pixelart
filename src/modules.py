@@ -75,7 +75,7 @@ class Generator(nn.Module):
 
 class Discriminator(nn.Module):
     """Discriminator network with PatchGAN."""
-    def __init__(self, in_channels, num_feat=64, num_repeat=6):
+    def __init__(self, in_channels, device, num_feat=64, num_repeat=6):
         super().__init__()
         layers = []
         layers.append(nn.Conv2d(in_channels, num_feat, kernel_size=4, stride=2, padding=1))
@@ -90,12 +90,13 @@ class Discriminator(nn.Module):
         self.main = nn.Sequential(*layers)
         self.conv1 = nn.Conv2d(curr_dim, 1, kernel_size=3, stride=1, padding=1)
         self.sigmoid = nn.Sigmoid()
+        self.device = device
         self.apply(weights_init())
 
     def forward(self, x):
         # inject gaussian noise into discriminator model for robustness
         noise_sigma = 0.1 # guess for good noise level
-        x =  x + torch.randn(x.shape) * noise_sigma
+        x =  x + torch.randn(x.shape).to(self.device) * noise_sigma
         h = self.main(x)
         out = self.sigmoid(self.conv1(h))
         return out
@@ -105,13 +106,16 @@ class Discriminator(nn.Module):
         fake_pred = self.forward(x_fake)
         # discriminator output is tanh and loss uses 0.9 and 0.1 smooth labels
         soft_fake, soft_real = 0.1, 0.9
+        # TODO: experiment with hard and soft labels (or maybe something inbetween)
         loss = torch.mean((real_pred - soft_real)**2) + torch.mean((fake_pred - soft_fake)**2)
         return loss
     
-    def calc_gen_loss(self, x):
-        pred = self.forward(x)
-        loss = torch.mean((pred - 1)**2) # hard label at 1 for generator
-        return loss 
+    # TODO: add auxilary loss for generator to enforce realistic colors
+    def calc_gen_loss(self, x, gen_x):
+        pred = self.forward(gen_x)
+        gan_loss = torch.mean((pred - 1)**2) # hard label at 1 for generator
+        color_loss = (torch.mean(x) - torch.mean(gen_x)) ** 2 # squared error of mean
+        return gan_loss, color_loss
 
 class SiameseNet(nn.Module):
     def __init__(self, image_size, in_channels, num_feat=64, num_repeat=5, gamma=10):

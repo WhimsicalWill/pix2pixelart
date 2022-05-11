@@ -14,7 +14,7 @@ class TravelGan:
         self.logger = logger 
         self.config = config 
         self.device = self.config['device']
-        self.dis = Discriminator(config['in_channels'], num_feat=config['num_feat'], num_repeat=config['num_repeat']).to(self.device)
+        self.dis = Discriminator(config['in_channels'], self.device, num_feat=config['num_feat'], num_repeat=config['num_repeat']).to(self.device)
         self.gen = Generator(config['in_channels'], num_feat=config['num_feat'], num_res=config['num_res']).to(self.device)
         self.siamese = SiameseNet(config['image_size'], config['in_channels'], num_feat=config['num_feat'], 
                                   num_repeat=config['num_repeat'], gamma=config['gamma']).to(self.device)
@@ -30,6 +30,7 @@ class TravelGan:
         self.dis_scheduler = optim.lr_scheduler.StepLR(self.opt_dis, config['step_size'], gamma=0.1)
 
     # call generator multiple times on larger image grid
+    # will call generator size_reduce ** 2 times
     def gen_grid(self, x_a):
         x_ab = torch.zeros_like(x_a).to(self.device) # shape (B, 3, H, W)
         dh, dw = x_ab.shape[2] // self.config['size_reduce'], x_ab.shape[3] // self.config['size_reduce']
@@ -58,7 +59,6 @@ class TravelGan:
             self.opt_dis.zero_grad()
             x_ab = self.gen_grid(x_a)
 
-            # TODO: add gaussian noise to discriminator
             dis_loss = self.dis.calc_dis_loss(x_b, x_ab.detach())
             dis_loss.backward()
             self.opt_dis.step()
@@ -70,11 +70,12 @@ class TravelGan:
             # Gen Update 
             #===============================
             self.opt_gen.zero_grad()
-            gen_adv_loss = self.dis.calc_gen_loss(x_ab)
+            gen_adv_loss, color_loss = self.dis.calc_gen_loss(x_a, x_ab)
 
             gen_siamese_loss = self.siamese.calc_loss(x_a, x_ab)
             gen_loss = self.config['gen_adv_loss_w'] * gen_adv_loss + \
-                       self.config['siamese_loss_w'] * gen_siamese_loss
+                        self.config['siamese_loss_w'] * gen_siamese_loss + \
+                        self.config['color_loss_w'] * color_loss
             
             gen_loss.backward()
             self.opt_gen.step()
