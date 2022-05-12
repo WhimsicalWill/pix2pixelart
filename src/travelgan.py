@@ -69,11 +69,12 @@ class TravelGan:
             #===============================
             # Gen Update 
             #===============================
+            torch.autograd.set_detect_anomaly(True)
             self.opt_gen.zero_grad()
             gen_adv_loss = self.dis.calc_gen_loss(x_ab)
+            gen_siamese_loss = self.siamese.calc_loss(x_a, x_ab)
             color_loss = self.dis.calc_color_loss(x_a.detach(), x_ab)
 
-            gen_siamese_loss = self.siamese.calc_loss(x_a, x_ab)
             gen_loss = self.config['gen_adv_loss_w'] * gen_adv_loss + \
                         self.config['siamese_loss_w'] * gen_siamese_loss + \
                         self.config['color_loss_w'] * color_loss
