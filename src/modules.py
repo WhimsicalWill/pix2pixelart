@@ -117,16 +117,12 @@ class Discriminator(nn.Module):
         return torch.mean((pred - 1)**2) # hard label at 1 for generator
 
     def calc_color_loss(self, x, gen_x):
-        # print(x.shape)
         for i in range(x.shape[0]):
             blurred_img = cv2.medianBlur(np.asarray(x[i].permute(1, 2, 0).cpu(), dtype=np.uint8), 65) # median blur w/ cv2
             x[i] = torch.from_numpy(blurred_img).permute(2, 0, 1) # reshape dimensions
         return torch.mean((x - gen_x)**2) # float and int op will return float
         # TODO: find the general norm of this loss
         # TODO: add intermediate step to GPU device for speed
-        # 2^7 * 2^7 = 2^14 = 16384
-        # 16384 * 256^2 = 2^14 * 2^16 = 2^30
-        # # we can scale by max possible deviation, 2^30 (calc general case)
 
 class SiameseNet(nn.Module):
     def __init__(self, image_size, in_channels, num_feat=64, num_repeat=5, gamma=10):

@@ -73,7 +73,7 @@ class TravelGan:
             self.opt_gen.zero_grad()
             gen_adv_loss = self.dis.calc_gen_loss(x_ab)
             gen_siamese_loss = self.siamese.calc_loss(x_a, x_ab)
-            color_loss = self.dis.calc_color_loss(x_a.detach(), x_ab)
+            color_loss = self.dis.calc_color_loss(x_a.detach().clone(), x_ab) # detach/clone to avoid backprop/modifying
 
             gen_loss = self.config['gen_adv_loss_w'] * gen_adv_loss + \
                         self.config['siamese_loss_w'] * gen_siamese_loss + \
