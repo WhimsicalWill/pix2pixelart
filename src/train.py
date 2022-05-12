@@ -15,8 +15,9 @@ parser = parser('config/config.ini')
 config = parser.to_dict()
 logger = Logger(config['logfile'], config['enable_wandb'])
 
-source_path = './final_source128'
-target_path = './final_target128'
+# paths to source and target domains
+source_path = '../../final_source128'
+target_path = '../../final_target128'
 
 print("Creating Dataloaders")
 # create torch dataloaders for source and target domains
