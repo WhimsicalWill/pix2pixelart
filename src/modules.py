@@ -118,7 +118,7 @@ class Discriminator(nn.Module):
 
     def calc_color_loss(self, x, gen_x):
         for i in range(x.shape[0]):
-            blurred_img = cv2.medianBlur(np.asarray(x[i].permute(1, 2, 0).cpu(), dtype=np.uint8), 65) # median blur w/ cv2
+            blurred_img = cv2.medianBlur(np.asarray(x[i].permute(1, 2, 0).cpu(), dtype=np.uint8), 5) # median blur w/ cv2
             x[i] = torch.from_numpy(blurred_img).permute(2, 0, 1) # reshape dimensions
         return torch.mean((x - gen_x)**2) # float and int op will return float
         # TODO: find the general norm of this loss
