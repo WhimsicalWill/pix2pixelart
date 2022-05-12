@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F 
 import numpy as np
+import cv2
 
 from src.utils import weights_init
 from collections import OrderedDict
@@ -111,11 +112,20 @@ class Discriminator(nn.Module):
         return loss
     
     # TODO: add auxilary loss for generator to enforce realistic colors
-    def calc_gen_loss(self, x, gen_x):
+    def calc_gen_loss(self, gen_x):
         pred = self.forward(gen_x)
-        gan_loss = torch.mean((pred - 1)**2) # hard label at 1 for generator
-        color_loss = (torch.mean(x) - torch.mean(gen_x)) ** 2 # squared error of mean
-        return gan_loss, color_loss
+        return torch.mean((pred - 1)**2) # hard label at 1 for generator
+
+    def calc_color_loss(self, x, gen_x):
+        print(x.shape)
+        for i in x.shape[0]:
+            blurred_img = cv2.medianBlur(np.asarray(x[i].permute(1, 2, 0), dtype=np.uint8), 65) # median blur w/ cv2
+            x[i] = torch.from_numpy(blurred_img).permute(2, 0, 1) # reshape dimensions
+        return torch.mean((x - gen_x)**2) # float and int op will return float
+        # TODO: find the general norm of this loss
+        # 2^7 * 2^7 = 2^14 = 16384
+        # 16384 * 256^2 = 2^14 * 2^16 = 2^30
+        # # we can scale by max possible deviation, 2^30 (calc general case)
 
 class SiameseNet(nn.Module):
     def __init__(self, image_size, in_channels, num_feat=64, num_repeat=5, gamma=10):

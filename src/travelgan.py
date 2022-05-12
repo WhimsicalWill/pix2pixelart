@@ -70,7 +70,8 @@ class TravelGan:
             # Gen Update 
             #===============================
             self.opt_gen.zero_grad()
-            gen_adv_loss, color_loss = self.dis.calc_gen_loss(x_a, x_ab)
+            gen_adv_loss = self.dis.calc_gen_loss(x_ab)
+            color_loss = self.dis.calc_color_loss(x_a, x_ab)
 
             gen_siamese_loss = self.siamese.calc_loss(x_a, x_ab)
             gen_loss = self.config['gen_adv_loss_w'] * gen_adv_loss + \
@@ -87,7 +88,7 @@ class TravelGan:
                 self.logger.add_scalar('siamese_loss', gen_siamese_loss.item(), global_step)
             
             if global_step % self.config['iter_sample'] == 0:
-                self.sample(x_a, global_step)
+                self.sample(x_a, x_b, x_ab, global_step)
             
     def train(self, loaderA, loaderB):
         for i in tqdm(range(self.config['epochs'])):
@@ -99,11 +100,12 @@ class TravelGan:
             if i % self.config['checkpoint_iter'] == 0:
                 self.save(i)
 
-    def sample(self, x_a, step):
+    def sample(self, x_a, x_b, x_ab, step):
         self.gen.eval()
         x_ab = self.gen_grid(x_a)
         self.logger.add_image('real images', x_a, step)
-        self.logger.add_image('sampled images', x_ab, step)
+        self.logger.add_image('pix images', x_b, step)
+        self.logger.add_image('real->pix images', x_ab, step)
         self.gen.train() # re-enable training mode
 
     def save(self, iter): 
