@@ -83,6 +83,7 @@ class TravelGan:
             if global_step % self.config['iter_log'] == 0 :
                 self.logger.add_scalar('gen_loss', gen_loss.item(), global_step)
                 self.logger.add_scalar('gen_adv_loss', gen_adv_loss.item(), global_step)
+                self.logger.add_scalar('color_loss', color_loss.item(), global_step)
                 self.logger.add_scalar('siamese_loss', gen_siamese_loss.item(), global_step)
             
             if global_step % self.config['iter_sample'] == 0:
