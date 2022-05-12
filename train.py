@@ -27,8 +27,8 @@ target_loader = get_DataLoader_fromFolder(target_path, config['batch_size'])
 print("Creating model")
 model = TravelGan(config, logger)
 
-# print("Loading saved model")
-# model.load()
+print("Loading saved model")
+model.load()
 
 print("The model is being trained!")
 model.train(source_loader, target_loader)
