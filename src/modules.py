@@ -120,7 +120,8 @@ class Discriminator(nn.Module):
         for i in range(x.shape[0]):
             blurred_img = cv2.medianBlur(np.asarray(x[i].permute(1, 2, 0).cpu(), dtype=np.uint8), 5) # median blur w/ cv2
             x[i] = torch.from_numpy(blurred_img).permute(2, 0, 1) # reshape dimensions
-        return torch.mean((x - gen_x)**2) # float and int op will return float
+        loss_rescale = 0.001 # rescale loss to match scale of other losses
+        return torch.mean((x - gen_x)**2) *  loss_rescale # float and int op will return float tensor
         # TODO: find the general norm of this loss
         # TODO: add intermediate step to GPU device for speed
 
