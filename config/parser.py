@@ -38,6 +38,7 @@ class parser:
         loss = self.config['LOSS']
         c['gen_adv_loss_w'] = loss.getfloat('gen_adv_loss_w')
         c['siamese_loss_w'] = loss.getfloat('siamese_loss_w')
+        c['color_loss_w'] = loss.getfloat('color_loss_w')
         c['gamma'] = loss.getfloat('gamma')
 
         return c

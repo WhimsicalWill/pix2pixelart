@@ -28,7 +28,7 @@ print("Creating model")
 model = TravelGan(config, logger)
 
 # print("Loading saved model")
-model.load()
+# model.load()
 
 print("The model is being trained!")
 model.train(source_loader, target_loader)

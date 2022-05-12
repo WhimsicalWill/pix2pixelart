@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F 
 import numpy as np
 
-from utils import weights_init
+from src.utils import weights_init
 from collections import OrderedDict
 from itertools import combinations
 
