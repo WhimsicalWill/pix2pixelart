@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim 
 import wandb 
 
-from src.modules import Generator, Discriminator, SiameseNet
+from modules import Generator, Discriminator, SiameseNet
 from tqdm import tqdm
 
 wandb.init('TravelGAN', name='PixelArt')
